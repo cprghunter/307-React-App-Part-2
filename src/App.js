@@ -20,22 +20,26 @@ class App extends Component {
     }
 
 
-    removeCharacter = index => {
-      const { characters } = this.state
-
-      this.setState({
-        characters: characters.filter((character, i) => {
-          return i !== index
-        }),
-      })
+    removeCharacter = id => {
+      var resp = axios.delete('http://localhost:5000/users/'.concat(id))
+            .then(function (response) {
+                console.log(response);
+                return response;
+            })
+            .catch(function (error) {
+              console.log(error);
+              return error;
+            });
+      if(resp.data){
+          const { characters } = resp.data.users_list
+          this.setState({ characters }) 
+      }
     }
-
-
 
     handleSubmit = character => {
        this.makePostCall(character).then( callResult => {
-          if (callResult === true) {
-             this.setState({ characters: [...this.state.characters, character] });
+          if (callResult.status === 201) {
+             this.setState({ characters: [...this.state.characters, callResult.data] });
           }
        });
     }
@@ -45,15 +49,13 @@ class App extends Component {
        return axios.post('http://localhost:5000/users', character)
         .then(function (response) {
           console.log(response);
-          return (response.status === 200);
+          return (response);
         })
         .catch(function (error) {
           console.log(error);
-          return false;
+          return error;
         });
      }
-
-
 
     componentDidMount() {
        axios.get('http://localhost:5000/users')
